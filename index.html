@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhonicsMaster - 自然拼读练习</title>
+<style>
+:root {
+  --primary: #6C5CE7;
+  --primary-light: #A29BFE;
+  --primary-dark: #5546C9;
+  --success: #00B894;
+  --success-light: #55EFC4;
+  --danger: #FF7675;
+  --danger-light: #FAB1A0;
+  --warning: #FDCB6E;
+  --warning-light: #FFEAA7;
+  --info: #74B9FF;
+  --bg: #F0F0F5;
+  --card: #FFFFFF;
+  --text: #2D3436;
+  --text-light: #636E72;
+  --border: #DFE6E9;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ===== Header ===== */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(108,92,231,0.3);
+}
+.header h1 { font-size: 1.4rem; display:flex; align-items:center; gap:8px; }
+.header h1 .logo { font-size: 1.6rem; }
+.header nav { display:flex; gap:4px; flex-wrap:wrap; }
+.header nav button {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.header nav button:hover { background: rgba(255,255,255,0.3); }
+.header nav button.active { background: #fff; color: var(--primary); }
+
+/* ===== Main ===== */
+.main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+.section { display: none; animation: fadeIn 0.3s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ===== Home ===== */
+.welcome-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  margin-bottom: 24px;
+}
+.welcome-card h2 { font-size: 1.6rem; margin-bottom: 8px; color: var(--primary); }
+.welcome-card p { color: var(--text-light); margin-bottom: 20px; }
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.stat-item { text-align:center; }
+.stat-item .num { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.stat-item .label { font-size: 0.8rem; color: var(--text-light); }
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.mode-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.25s;
+  border: 2px solid transparent;
+  text-align: center;
+}
+.mode-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--primary-light); }
+.mode-card .icon { font-size: 2.5rem; margin-bottom: 12px; }
+.mode-card h3 { font-size: 1.15rem; margin-bottom: 6px; color: var(--text); }
+.mode-card p { font-size: 0.85rem; color: var(--text-light); }
+.mode-card .arrow { margin-top: 12px; color: var(--primary); font-weight: 600; font-size: 0.85rem; }
+
+/* ===== Practice Mode Common ===== */
+.mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.mode-header h2 { font-size: 1.3rem; color: var(--text); }
+.back-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+.back-btn:hover { background: var(--bg); color: var(--text); }
+
+.practice-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Settings bar */
+.settings-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.settings-bar select, .settings-bar .btn-secondary {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text);
+  outline: none;
+}
+.settings-bar select:focus { border-color: var(--primary); }
+.btn-secondary {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-light) !important;
+}
+.btn-secondary:hover { background: var(--bg) !important; }
+
+/* Big display */
+.big-display {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 20px 0;
+  font-family: 'Doulos SIL', 'Charis SIL', 'Gentium Plus', serif;
+  letter-spacing: 0.02em;
+}
+.ipa-display {
+  font-size: 3rem;
+  font-family: 'Doulos SIL', 'Charis SIL', 'Gentium Plus', serif;
+  color: var(--primary);
+  margin: 16px 0;
+}
+.word-display {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 16px 0;
+}
+.hint-text { color: var(--text-light); font-size: 0.9rem; margin-bottom: 12px; }
+
+/* Phonics breakdown */
+.phonics-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px 0;
+}
+.phoneme-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  min-width: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.phoneme-block:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+.phoneme-block .grapheme { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.phoneme-block .phoneme { font-size: 0.9rem; color: var(--primary); font-family: 'Doulos SIL', serif; }
+.phoneme-block.unknown .phoneme { color: var(--danger); }
+
+/* Buttons */
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #00A383; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-large { padding: 14px 36px; font-size: 1.05rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+
+/* Input */
+.ipa-input {
+  font-size: 1.8rem;
+  font-family: 'Doulos SIL', 'Charis SIL', serif;
+  text-align: center;
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 350px;
+  outline: none;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+.ipa-input:focus { border-color: var(--primary); }
+
+/* Feedback */
+.feedback {
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  margin: 16px 0;
+  font-size: 0.95rem;
+  display: none;
+}
+.feedback.show { display: block; animation: fadeIn 0.3s; }
+.feedback.correct { background: var(--success-light); color: #008E6E; border: 1px solid var(--success); }
+.feedback.wrong { background: var(--danger-light); color: #C0392B; border: 1px solid var(--danger); }
+.feedback.info { background: var(--warning-light); color: #B8860B; border: 1px solid var(--warning); }
+.feedback strong { font-size: 1.1rem; }
+
+/* Progress bar */
+.progress-bar {
+  background: var(--bg);
+  border-radius: 20px;
+  height: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 20px;
+  transition: width 0.3s;
+}
+.session-info { font-size: 0.85rem; color: var(--text-light); display:flex; justify-content:space-between; }
+
+/* ===== IPA Chart ===== */
+.ipa-chart { display: grid; gap: 20px; }
+.ipa-category {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.ipa-category h3 {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--bg);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ipa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+.ipa-item {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.ipa-item:hover { border-color: var(--primary-light); transform: translateY(-2px); background: #fff; box-shadow: var(--shadow); }
+.ipa-item .symbol { font-size: 1.5rem; font-family: 'Doulos SIL', serif; color: var(--primary); font-weight: 600; }
+.ipa-item .example { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+.ipa-item .desc { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+
+/* ===== Phonics Rules ===== */
+.rules-list { display: grid; gap: 12px; }
+.rule-card {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rule-card .rule-pattern {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 80px;
+  font-family: 'Doulos SIL', serif;
+}
+.rule-card .rule-info { flex: 1; }
+.rule-card .rule-phoneme { font-size: 1rem; color: var(--success); font-family: 'Doulos SIL', serif; }
+.rule-card .rule-examples { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+.rule-card .rule-desc { font-size: 0.8rem; color: var(--text-light); }
+.rule-card .play-btn {
+  background: var(--bg);
+  border: none;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+.rule-card .play-btn:hover { background: var(--primary); color: #fff; }
+
+.rule-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.rule-filter button {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+.rule-filter button.active, .rule-filter button:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Answer reveal */
+.answer-reveal {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin: 12px 0;
+  display: none;
+}
+.answer-reveal.show { display: block; }
+.answer-reveal .label { font-size: 0.8rem; color: var(--text-light); margin-bottom: 4px; }
+.answer-reveal .value { font-size: 1.3rem; font-family: 'Doulos SIL', serif; color: var(--primary); }
+.answer-reveal .word-list { font-size: 0.85rem; color: var(--text-light); margin-top: 8px; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header { flex-direction: column; gap: 10px; }
+  .header nav { justify-content: center; }
+  .big-display { font-size: 2.5rem; }
+  .ipa-display { font-size: 2.2rem; }
+  .word-display { font-size: 2rem; }
+  .mode-grid { grid-template-columns: 1fr; }
+}
+
+/* IPA keyboard */
+.ipa-keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin: 12px 0;
+  max-width: 500px;
+}
+.ipa-key {
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Doulos SIL', serif;
+  font-size: 1rem;
+  transition: all 0.15s;
+}
+.ipa-key:hover { background: var(--primary); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span class="logo">phonics</span> PhonicsMaster</h1>
+  <nav>
+    <button onclick="showSection('home')" class="active" id="nav-home">首页</button>
+    <button onclick="showSection('mode1')" id="nav-mode1">音标认读</button>
+    <button onclick="showSection('mode2')" id="nav-mode2">听音写标</button>
+    <button onclick="showSection('mode3')" id="nav-mode3">看词拼读</button>
+    <button onclick="showSection('chart')" id="nav-chart">音标表</button>
+    <button onclick="showSection('rules')" id="nav-rules">拼读规则</button>
+  </nav>
+</div>
+
+<div class="main">
+
+<!-- ===== HOME ===== -->
+<div class="section active" id="section-home">
+  <div class="welcome-card">
+    <h2>PhonicsMaster 自然拼读练习</h2>
+    <p>看音标能读 | 听单词能标 | 看单词能拼</p>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="num" id="stat-total">0</div>
+        <div class="label">总练习数</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" id="stat-correct">0</div>
+        <div class="label">正确数</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" id="stat-accuracy">—</div>
+        <div class="label">正确率</div>
+      </div>
+      <div class="stat-item">
+        <div class="num" id="stat-streak">0</div>
+        <div class="label">最佳连击</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card" onclick="showSection('mode1')">
+      <div class="icon">see</div>
+      <h3>音标认读</h3>
+      <p>看到音标，练习发音<br>点击可听标准读音对照</p>
+      <div class="arrow">开始练习 →</div>
+    </div>
+    <div class="mode-card" onclick="showSection('mode2')">
+      <div class="icon">ear</div>
+      <h3>听音写标</h3>
+      <p>听到单词发音<br>写出对应的音标</p>
+      <div class="arrow">开始练习 →</div>
+    </div>
+    <div class="mode-card" onclick="showSection('mode3')">
+      <div class="icon">book</div>
+      <h3>看词拼读</h3>
+      <p>看到单词<br>用自然拼读规则读出来</p>
+      <div class="arrow">开始练习 →</div>
+    </div>
+    <div class="mode-card" onclick="showSection('chart')">
+      <div class="icon">chart</div>
+      <h3>音标速查表</h3>
+      <p>44个英语音标<br>含示例和发音说明</p>
+      <div class="arrow">查看 →</div>
+    </div>
+    <div class="mode-card" onclick="showSection('rules')">
+      <div class="icon">rules</div>
+      <h3>拼读规则库</h3>
+      <p>字母组合到音标的<br>对应规则大全</p>
+      <div class="arrow">查看 →</div>
+    </div>
+    <div class="mode-card" onclick="resetStats()" style="border-color: var(--danger-light);">
+      <div class="icon">reset</div>
+      <h3>重置进度</h3>
+      <p>清除所有练习记录<br>重新开始</p>
+      <div class="arrow" style="color:var(--danger);">重置 →</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODE 1: See IPA → Read ===== -->
+<div class="section" id="section-mode1">
+  <div class="mode-header">
+    <h2>音标认读</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <div class="settings-bar">
+    <select id="m1-category">
+      <option value="all">全部音标</option>
+      <option value="vowel-short">短元音</option>
+      <option value="vowel-long">长元音</option>
+      <option value="diphthong">双元音</option>
+      <option value="consonant-plosive">爆破辅音</option>
+      <option value="consonant-fricative">摩擦辅音</option>
+      <option value="consonant-other">其他辅音</option>
+    </select>
+    <span class="session-info" style="margin-left:auto;">
+      <span>本轮: <strong id="m1-count">0</strong></span>
+    </span>
+  </div>
+  <div class="practice-card" id="m1-card">
+    <p class="hint-text">请大声读出下面的音标</p>
+    <div class="big-display" id="m1-symbol">/æ/</div>
+    <div id="m1-desc" class="hint-text">短元音，嘴巴张大</div>
+    <div id="m1-examples" class="hint-text" style="font-size:1rem; color:var(--text);">示例词: cat, bat, map</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="m1PlayExample()">听示例词</button>
+      <button class="btn btn-success" onclick="m1Next()">我读对了 ↵</button>
+      <button class="btn btn-secondary" onclick="m1Next()">跳过</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="fill" id="m1-progress" style="width:0%"></div></div>
+</div>
+
+<!-- ===== MODE 2: Hear Word → Write IPA ===== -->
+<div class="section" id="section-mode2">
+  <div class="mode-header">
+    <h2>听音写标</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <div class="settings-bar">
+    <select id="m2-level">
+      <option value="1">Lv1 短元音CVC</option>
+      <option value="2">Lv2 辅音字母组合</option>
+      <option value="3">Lv3 长元音magic-e</option>
+      <option value="4">Lv4 元音字母组合</option>
+      <option value="5">Lv5 r控制元音</option>
+      <option value="6">Lv6 综合</option>
+      <option value="all" selected>全部</option>
+    </select>
+    <span class="session-info" style="margin-left:auto;">
+      <span>本轮: <strong id="m2-count">0</strong> | 正确: <strong id="m2-correct">0</strong></span>
+    </span>
+  </div>
+  <div class="practice-card" id="m2-card">
+    <p class="hint-text">点击播放，听单词发音后写出音标</p>
+    <button class="btn btn-primary btn-large" onclick="m2Play()" id="m2-play-btn">播放发音</button>
+    <div style="margin: 20px 0;">
+      <input type="text" class="ipa-input" id="m2-input" placeholder="/    /" autocomplete="off"
+        onkeydown="if(event.key==='Enter') m2Check()">
+    </div>
+    <div class="ipa-keyboard" id="m2-keyboard"></div>
+    <div class="feedback" id="m2-feedback"></div>
+    <div class="answer-reveal" id="m2-reveal">
+      <div class="label">正确答案:</div>
+      <div class="value" id="m2-answer"></div>
+      <div class="word-list" id="m2-word-info"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="m2Check()">提交答案 ↵</button>
+      <button class="btn btn-secondary" onclick="m2Reveal()">看答案</button>
+      <button class="btn btn-primary" onclick="m2Next()" id="m2-next-btn" style="display:none;">下一个 →</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="fill" id="m2-progress" style="width:0%"></div></div>
+</div>
+
+<!-- ===== MODE 3: See Word → Read with Phonics ===== -->
+<div class="section" id="section-mode3">
+  <div class="mode-header">
+    <h2>看词拼读</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <div class="settings-bar">
+    <select id="m3-level">
+      <option value="1">Lv1 短元音CVC</option>
+      <option value="2">Lv2 辅音字母组合</option>
+      <option value="3">Lv3 长元音magic-e</option>
+      <option value="4">Lv4 元音字母组合</option>
+      <option value="5">Lv5 r控制元音</option>
+      <option value="6">Lv6 综合</option>
+      <option value="all" selected>全部</option>
+    </select>
+    <label style="font-size:0.85rem; color:var(--text-light);">
+      <input type="checkbox" id="m3-show-phonics" checked> 显示拼读拆分
+    </label>
+    <span class="session-info" style="margin-left:auto;">
+      <span>本轮: <strong id="m3-count">0</strong></span>
+    </span>
+  </div>
+  <div class="practice-card" id="m3-card">
+    <p class="hint-text">请用自然拼读规则读出下面的单词</p>
+    <div class="word-display" id="m3-word">cat</div>
+    <div class="phonics-breakdown" id="m3-breakdown"></div>
+    <div class="answer-reveal show" id="m3-ipa" style="display:none;">
+      <div class="label">音标:</div>
+      <div class="value" id="m3-ipa-value"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="m3Play()">听发音</button>
+      <button class="btn btn-secondary" onclick="m3TogglePhonics()" id="m3-toggle-btn">隐藏拆分</button>
+      <button class="btn btn-success" onclick="m3Next()">下一个 →</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="fill" id="m3-progress" style="width:0%"></div></div>
+</div>
+
+<!-- ===== IPA CHART ===== -->
+<div class="section" id="section-chart">
+  <div class="mode-header">
+    <h2>音标速查表</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <p class="hint-text" style="margin-bottom:16px;">点击任意音标可听示例词发音</p>
+  <div class="ipa-chart" id="ipa-chart-container"></div>
+</div>
+
+<!-- ===== PHONICS RULES ===== -->
+<div class="section" id="section-rules">
+  <div class="mode-header">
+    <h2>自然拼读规则库</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <div class="rule-filter" id="rule-filter-bar"></div>
+  <div class="rules-list" id="rules-container"></div>
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// DATA: IPA Phonemes (44 English phonemes)
+// ============================================================
+const IPA_DATA = {
+  'vowel-short': {
+    title: '短元音 Short Vowels',
+    icon: 'V',
+    items: [
+      { symbol: '\u026A', examples: ['sit', 'bit', 'ship'], desc: '短促/i/，比中文"衣"短' },
+      { symbol: 'e', examples: ['bed', 'red', 'head'], desc: '嘴巴微张，发"哎"' },
+      { symbol: '\u00E6', examples: ['cat', 'bat', 'map'], desc: '嘴大张，介于/a/和/e/' },
+      { symbol: '\u028C', examples: ['cup', 'bus', 'love'], desc: '短促/ʌ/，嘴微张' },
+      { symbol: '\u028A', examples: ['book', 'put', 'good'], desc: '圆唇短促/u/' },
+      { symbol: '\u0259', examples: ['about', 'sofa', 'teacher'], desc: '中央元音，轻读' },
+    ]
+  },
+  'vowel-long': {
+    title: '长元音 Long Vowels',
+    icon: 'V\u02D0',
+    items: [
+      { symbol: 'i\u02D0', examples: ['see', 'eat', 'key'], desc: '长/i/，微笑状' },
+      { symbol: '\u0251\u02D0', examples: ['car', 'far', 'arm'], desc: '长/a/，张大嘴' },
+      { symbol: '\u0254\u02D0', examples: ['saw', 'law', 'call'], desc: '圆唇长/o/' },
+      { symbol: 'u\u02D0', examples: ['too', 'food', 'blue'], desc: '圆唇长/u/' },
+      { symbol: '\u025C\u02D0', examples: ['bird', 'her', 'sir'], desc: '卷舌长音' },
+    ]
+  },
+  'diphthong': {
+    title: '双元音 Diphthongs',
+    icon: 'V\u2192V',
+    items: [
+      { symbol: 'e\u026A', examples: ['day', 'make', 'rain'], desc: '/e/滑向/I/' },
+      { symbol: 'a\u026A', examples: ['my', 'bike', 'night'], desc: '/a/滑向/I/' },
+      { symbol: '\u0254\u026A', examples: ['boy', 'coin', 'join'], desc: '/O/滑向/I/' },
+      { symbol: 'a\u028A', examples: ['how', 'house', 'cow'], desc: '/a/滑向/U/' },
+      { symbol: '\u0259\u028A', examples: ['go', 'home', 'boat'], desc: '/@/滑向/U/' },
+      { symbol: '\u026A\u0259', examples: ['here', 'ear', 'near'], desc: '/I/滑向/@/' },
+      { symbol: 'e\u0259', examples: ['hair', 'air', 'care'], desc: '/e/滑向/@/' },
+      { symbol: '\u028A\u0259', examples: ['tour', 'pure', 'sure'], desc: '/U/滑向/@/' },
+    ]
+  },
+  'consonant-plosive': {
+    title: '爆破辅音 Plosives',
+    icon: 'P',
+    items: [
+      { symbol: 'p', examples: ['pen', 'cup', 'stop'], desc: '清辅音，送气' },
+      { symbol: 'b', examples: ['bad', 'lab', 'web'], desc: '浊辅音，不送气' },
+      { symbol: 't', examples: ['tea', 'cat', 'bit'], desc: '清辅音，舌尖抵上齿龈' },
+      { symbol: 'd', examples: ['did', 'bed', 'dog'], desc: '浊辅音' },
+      { symbol: 'k', examples: ['cat', 'book', 'school'], desc: '清辅音，舌根抵软腭' },
+      { symbol: '\u0261', examples: ['got', 'bag', 'dog'], desc: '浊辅音' },
+    ]
+  },
+  'consonant-fricative': {
+    title: '摩擦辅音 Fricatives',
+    icon: 'F',
+    items: [
+      { symbol: 'f', examples: ['fall', 'coffee', 'laugh'], desc: '上齿咬下唇' },
+      { symbol: 'v', examples: ['van', 'love', 'very'], desc: '浊辅音，上齿咬下唇' },
+      { symbol: '\u03B8', examples: ['thin', 'bath', 'three'], desc: '清辅音，舌咬齿间' },
+      { symbol: '\u00F0', examples: ['this', 'mother', 'the'], desc: '浊辅音，舌咬齿间' },
+      { symbol: 's', examples: ['see', 'bus', 'city'], desc: '清辅音，齿间摩擦' },
+      { symbol: 'z', examples: ['zoo', 'buzz', 'nose'], desc: '浊辅音' },
+      { symbol: '\u0283', examples: ['shoe', 'fish', 'she'], desc: '清辅音，噘嘴' },
+      { symbol: '\u0292', examples: ['vision', 'measure', 'beige'], desc: '浊辅音' },
+      { symbol: 'h', examples: ['hat', 'behind', 'who'], desc: '清辅音，气流从声门出' },
+    ]
+  },
+  'consonant-other': {
+    title: '其他辅音 Affricates, Nasals, Approximants',
+    icon: 'C',
+    items: [
+      { symbol: 't\u0283', examples: ['chain', 'chair', 'watch'], desc: '清辅音，/t/+/S/' },
+      { symbol: 'd\u0292', examples: ['jam', 'judge', 'bridge'], desc: '浊辅音，/d/+/Z/' },
+      { symbol: 'm', examples: ['man', 'time', 'swim'], desc: '双唇鼻音' },
+      { symbol: 'n', examples: ['now', 'sun', 'pen'], desc: '齿龈鼻音' },
+      { symbol: '\u014B', examples: ['sing', 'ring', 'bank'], desc: '后鼻音，舌根抵软腭' },
+      { symbol: 'l', examples: ['leg', 'tall', 'feel'], desc: '舌抵上齿龈，气流从两侧出' },
+      { symbol: 'r', examples: ['red', 'right', 'very'], desc: '卷舌音' },
+      { symbol: 'j', examples: ['yes', 'you', 'yellow'], desc: '半元音，类似/i/短促' },
+      { symbol: 'w', examples: ['wet', 'win', 'queen'], desc: '半元音，圆唇' },
+    ]
+  }
+};
+
+// ============================================================
+// DATA: Word list with IPA and phonics breakdown
+// ============================================================
+const WORDS = [
+  // Level 1: CVC short vowels
+  { word:'cat', ipa:'k\u00E6t', level:1, phonics:[['c','k'],['a','\u00E6'],['t','t']] },
+  { word:'bat', ipa:'b\u00E6t', level:1, phonics:[['b','b'],['a','\u00E6'],['t','t']] },
+  { word:'hat', ipa:'h\u00E6t', level:1, phonics:[['h','h'],['a','\u00E6'],['t','t']] },
+  { word:'map', ipa:'m\u00E6p', level:1, phonics:[['m','m'],['a','\u00E6'],['p','p']] },
+  { word:'bag', ipa:'b\u00E6g', level:1, phonics:[['b','b'],['a','\u00E6'],['g','\u0261']] },
+  { word:'dog', ipa:'d\u0252g', level:1, phonics:[['d','d'],['o','\u0252'],['g','\u0261']] },
+  { word:'fox', ipa:'f\u0252ks', level:1, phonics:[['f','f'],['o','\u0252'],['x','ks']] },
+  { word:'hot', ipa:'h\u0252t', level:1, phonics:[['h','h'],['o','\u0252'],['t','t']] },
+  { word:'sit', ipa:'s\u026At', level:1, phonics:[['s','s'],['i','\u026A'],['t','t']] },
+  { word:'pig', ipa:'p\u026Ag', level:1, phonics:[['p','p'],['i','\u026A'],['g','\u0261']] },
+  { word:'big', ipa:'b\u026Ag', level:1, phonics:[['b','b'],['i','\u026A'],['g','\u0261']] },
+  { word:'win', ipa:'w\u026An', level:1, phonics:[['w','w'],['i','\u026A'],['n','n']] },
+  { word:'bed', ipa:'bed', level:1, phonics:[['b','b'],['e','e'],['d','d']] },
+  { word:'red', ipa:'red', level:1, phonics:[['r','r'],['e','e'],['d','d']] },
+  { word:'pen', ipa:'pen', level:1, phonics:[['p','p'],['e','e'],['n','n']] },
+  { word:'ten', ipa:'ten', level:1, phonics:[['t','t'],['e','e'],['n','n']] },
+  { word:'cup', ipa:'k\u028Cp', level:1, phonics:[['c','k'],['u','\u028C'],['p','p']] },
+  { word:'bus', ipa:'b\u028Cs', level:1, phonics:[['b','b'],['u','\u028C'],['s','s']] },
+  { word:'sun', ipa:'s\u028Cn', level:1, phonics:[['s','s'],['u','\u028C'],['n','n']] },
+  { word:'cut', ipa:'k\u028Ct', level:1, phonics:[['c','k'],['u','\u028C'],['t','t']] },
+
+  // Level 2: Consonant digraphs
+  { word:'chip', ipa:'t\u0283\u026Ap', level:2, phonics:[['ch','t\u0283'],['i','\u026A'],['p','p']] },
+  { word:'ship', ipa:'\u0283\u026Ap', level:2, phonics:[['sh','\u0283'],['i','\u026A'],['p','p']] },
+  { word:'fish', ipa:'f\u026A\u0283', level:2, phonics:[['f','f'],['i','\u026A'],['sh','\u0283']] },
+  { word:'thin', ipa:'\u03B8\u026An', level:2, phonics:[['th','\u03B8'],['i','\u026A'],['n','n']] },
+  { word:'this', ipa:'\u00F0\u026As', level:2, phonics:[['th','\u00F0'],['i','\u026A'],['s','s']] },
+  { word:'when', ipa:'wen', level:2, phonics:[['wh','w'],['e','e'],['n','n']] },
+  { word:'photo', ipa:'\u02C8f\u0259\u028At\u0259\u028A', level:2, phonics:[['ph','f'],['o','\u0259\u028A'],['t','t'],['o','\u0259\u028A']] },
+  { word:'ring', ipa:'r\u026A\u014B', level:2, phonics:[['r','r'],['i','\u026A'],['ng','\u014B']] },
+  { word:'song', ipa:'s\u0252\u014B', level:2, phonics:[['s','s'],['o','\u0252'],['ng','\u014B']] },
+  { word:'neck', ipa:'nek', level:2, phonics:[['n','n'],['e','e'],['ck','k']] },
+  { word:'duck', ipa:'d\u028Ck', level:2, phonics:[['d','d'],['u','\u028C'],['ck','k']] },
+  { word:'shell', ipa:'\u0283el', level:2, phonics:[['sh','\u0283'],['e','e'],['ll','l']] },
+  { word:'chess', ipa:'t\u0283es', level:2, phonics:[['ch','t\u0283'],['e','e'],['ss','s']] },
+  { word:'thumb', ipa:'\u03B8\u028Cm', level:2, phonics:[['th','\u03B8'],['u','\u028C'],['mb','m']] },
+  { word:'math', ipa:'m\u00E6\u03B8', level:2, phonics:[['m','m'],['a','\u00E6'],['th','\u03B8']] },
+
+  // Level 3: Magic-e (silent e)
+  { word:'cake', ipa:'ke\u026Ak', level:3, phonics:[['c','k'],['a_e','e\u026A']] },
+  { word:'make', ipa:'me\u026Ak', level:3, phonics:[['m','m'],['a_e','e\u026A']] },
+  { word:'name', ipa:'ne\u026Am', level:3, phonics:[['n','n'],['a_e','e\u026A']] },
+  { word:'bike', ipa:'ba\u026Ak', level:3, phonics:[['b','b'],['i_e','a\u026A']] },
+  { word:'time', ipa:'ta\u026Am', level:3, phonics:[['t','t'],['i_e','a\u026A']] },
+  { word:'kite', ipa:'ka\u026At', level:3, phonics:[['k','k'],['i_e','a\u026A']] },
+  { word:'home', ipa:'h\u0259\u028Am', level:3, phonics:[['h','h'],['o_e','\u0259\u028A']] },
+  { word:'nose', ipa:'n\u0259\u028Az', level:3, phonics:[['n','n'],['o_e','\u0259\u028A']] },
+  { word:'bone', ipa:'b\u0259\u028An', level:3, phonics:[['b','b'],['o_e','\u0259\u028A']] },
+  { word:'tube', ipa:'tju\u02D0b', level:3, phonics:[['t','t'],['u_e','ju\u02D0']] },
+  { word:'cube', ipa:'kju\u02D0b', level:3, phonics:[['c','k'],['u_e','ju\u02D0']] },
+  { word:'flute', ipa:'flu\u02D0t', level:3, phonics:[['fl','fl'],['u_e','u\u02D0']] },
+
+  // Level 4: Vowel teams
+  { word:'rain', ipa:'re\u026An', level:4, phonics:[['r','r'],['ai','e\u026A'],['n','n']] },
+  { word:'train', ipa:'tre\u026An', level:4, phonics:[['tr','tr'],['ai','e\u026A'],['n','n']] },
+  { word:'day', ipa:'de\u026A', level:4, phonics:[['d','d'],['ay','e\u026A']] },
+  { word:'play', ipa:'ple\u026A', level:4, phonics:[['pl','pl'],['ay','e\u026A']] },
+  { word:'see', ipa:'si\u02D0', level:4, phonics:[['s','s'],['ee','i\u02D0']] },
+  { word:'tree', ipa:'tri\u02D0', level:4, phonics:[['tr','tr'],['ee','i\u02D0']] },
+  { word:'tea', ipa:'ti\u02D0', level:4, phonics:[['t','t'],['ea','i\u02D0']] },
+  { word:'meat', ipa:'mi\u02D0t', level:4, phonics:[['m','m'],['ea','i\u02D0'],['t','t']] },
+  { word:'boat', ipa:'b\u0259\u028At', level:4, phonics:[['b','b'],['oa','\u0259\u028A'],['t','t']] },
+  { word:'coat', ipa:'k\u0259\u028At', level:4, phonics:[['c','k'],['oa','\u0259\u028A'],['t','t']] },
+  { word:'soap', ipa:'s\u0259\u028Ap', level:4, phonics:[['s','s'],['oa','\u0259\u028A'],['p','p']] },
+  { word:'night', ipa:'na\u026At', level:4, phonics:[['n','n'],['igh','a\u026A'],['t','t']] },
+  { word:'light', ipa:'la\u026At', level:4, phonics:[['l','l'],['igh','a\u026A'],['t','t']] },
+  { word:'boy', ipa:'b\u0254\u026A', level:4, phonics:[['b','b'],['oy','\u0254\u026A']] },
+  { word:'coin', ipa:'k\u0254\u026An', level:4, phonics:[['c','k'],['oy','\u0254\u026A'],['n','n']] },
+  { word:'book', ipa:'b\u028Ak', level:4, phonics:[['b','b'],['oo','\u028A'],['k','k']] },
+  { word:'moon', ipa:'mu\u02D0n', level:4, phonics:[['m','m'],['oo','u\u02D0'],['n','n']] },
+  { word:'cloud', ipa:'kla\u028Ad', level:4, phonics:[['cl','kl'],['ou','a\u028A'],['d','d']] },
+  { word:'house', ipa:'ha\u028As', level:4, phonics:[['h','h'],['ou','a\u028A'],['s','s'],['e','']] },
+  { word:'bread', ipa:'bred', level:4, phonics:[['b','b'],['ea','e'],['d','d']] },
+  { word:'head', ipa:'hed', level:4, phonics:[['h','h'],['ea','e'],['d','d']] },
+
+  // Level 5: R-controlled vowels
+  { word:'car', ipa:'k\u0251\u02D0', level:5, phonics:[['c','k'],['ar','\u0251\u02D0']] },
+  { word:'far', ipa:'f\u0251\u02D0', level:5, phonics:[['f','f'],['ar','\u0251\u02D0']] },
+  { word:'star', ipa:'st\u0251\u02D0', level:5, phonics:[['st','st'],['ar','\u0251\u02D0']] },
+  { word:'bird', ipa:'b\u025C\u02D0d', level:5, phonics:[['b','b'],['ir','\u025C\u02D0'],['d','d']] },
+  { word:'girl', ipa:'g\u025C\u02D0l', level:5, phonics:[['g','\u0261'],['ir','\u025C\u02D0'],['l','l']] },
+  { word:'sir', ipa:'s\u025C\u02D0', level:5, phonics:[['s','s'],['ir','\u025C\u02D0']] },
+  { word:'fork', ipa:'f\u0254\u02D0k', level:5, phonics:[['f','f'],['or','\u0254\u02D0'],['k','k']] },
+  { word:'horn', ipa:'h\u0254\u02D0n', level:5, phonics:[['h','h'],['or','\u0254\u02D0'],['n','n']] },
+  { word:'turn', ipa:'t\u025C\u02D0n', level:5, phonics:[['t','t'],['ur','\u025C\u02D0'],['n','n']] },
+  { word:'burn', ipa:'b\u025C\u02D0n', level:5, phonics:[['b','b'],['ur','\u025C\u02D0'],['n','n']] },
+  { word:'hair', ipa:'he\u0259', level:5, phonics:[['h','h'],['air','e\u0259']] },
+  { word:'chair', ipa:'t\u0283e\u0259', level:5, phonics:[['ch','t\u0283'],['air','e\u0259']] },
+  { word:'ear', ipa:'\u026A\u0259', level:5, phonics:[['ear','\u026A\u0259']] },
+  { word:'near', ipa:'n\u026A\u0259', level:5, phonics:[['n','n'],['ear','\u026A\u0259']] },
+
+  // Level 6: Mixed/complex
+  { word:'apple', ipa:'\u02C8\u00E6p\u0259l', level:6, phonics:[['a','\u00E6'],['pp','p'],['l','l'],['e','\u0259']] },
+  { word:'table', ipa:'\u02C8te\u026Ab\u0259l', level:6, phonics:[['t','t'],['a_e','e\u026A'],['b','b'],['l','l'],['e','\u0259']] },
+  { word:'happy', ipa:'\u02C8h\u00E6pi', level:6, phonics:[['h','h'],['a','\u00E6'],['pp','p'],['y','i']] },
+  { word:'little', ipa:'\u02C8l\u026At\u0259l', level:6, phonics:[['l','l'],['i','\u026A'],['tt','t'],['l','l'],['e','\u0259']] },
+  { word:'flower', ipa:'\u02C8fla\u028A\u0259', level:6, phonics:[['fl','fl'],['ow','a\u028A'],['er','\u0259']] },
+  { word:'teacher', ipa:'\u02C8ti\u02D0t\u0283\u0259', level:6, phonics:[['t','t'],['ea','i\u02D0'],['ch','t\u0283'],['er','\u0259']] },
+  { word:'kitchen', ipa:'\u02C8k\u026At\u0283\u026An', level:6, phonics:[['k','k'],['i','\u026A'],['tch','t\u0283'],['e','\u026A'],['n','n']] },
+  { word:'spring', ipa:'spr\u026A\u014B', level:6, phonics:[['spr','spr'],['i','\u026A'],['ng','\u014B']] },
+  { word:'street', ipa:'stri\u02D0t', level:6, phonics:[['str','str'],['ee','i\u02D0'],['t','t']] },
+  { word:'chalk', ipa:'t\u0283\u0254\u02D0k', level:6, phonics:[['ch','t\u0283'],['al','\u0254\u02D0'],['k','k']] },
+  { word:'thumb', ipa:'\u03B8\u028Cm', level:6, phonics:[['th','\u03B8'],['u','\u028C'],['mb','m']] },
+  { word:'bridge', ipa:'br\u026Ad\u0292', level:6, phonics:[['br','br'],['i','\u026A'],['dge','d\u0292']] },
+  { word:'phone', ipa:'f\u0259\u028An', level:6, phonics:[['ph','f'],['o_e','\u0259\u028A']] },
+  { word:'write', ipa:'ra\u026At', level:6, phonics:[['wr','r'],['i_e','a\u026A']] },
+  { word:'knife', ipa:'na\u026Af', level:6, phonics:[['kn','n'],['i_e','a\u026A']] },
+  { word:'guard', ipa:'g\u0251\u02D0d', level:6, phonics:[['gu','\u0261'],['ar','\u0251\u02D0'],['d','d']] },
+];
+
+// ============================================================
+// DATA: Phonics Rules
+// ============================================================
+const PHONICS_RULES = [
+  // Short vowels (CVC)
+  { cat:'short-vowel', pattern:'a (CVC)', phoneme:'\u00E6', examples:'cat, bat, map, bag', desc:'辅音-a-辅音结构中，a发短音/\u00E6/' },
+  { cat:'short-vowel', pattern:'e (CVC)', phoneme:'e', examples:'bed, red, pen, ten', desc:'辅音-e-辅音结构中，e发短音/e/' },
+  { cat:'short-vowel', pattern:'i (CVC)', phoneme:'\u026A', examples:'sit, pig, big, win', desc:'辅音-i-辅音结构中，i发短音/\u026A/' },
+  { cat:'short-vowel', pattern:'o (CVC)', phoneme:'\u0252', examples:'dog, fox, hot, pot', desc:'辅音-o-辅音结构中，o发短音/\u0252/' },
+  { cat:'short-vowel', pattern:'u (CVC)', phoneme:'\u028C', examples:'cup, bus, sun, cut', desc:'辅音-u-辅音结构中，u发短音/\u028C/' },
+
+  // Consonant digraphs
+  { cat:'digraph', pattern:'ch', phoneme:'t\u0283', examples:'chip, chair, church', desc:'ch组合发/t\u0283/' },
+  { cat:'digraph', pattern:'sh', phoneme:'\u0283', examples:'ship, fish, shell', desc:'sh组合发/\u0283/' },
+  { cat:'digraph', pattern:'th (清)', phoneme:'\u03B8', examples:'thin, bath, three', desc:'th在实词词首发清音/\u03B8/' },
+  { cat:'digraph', pattern:'th (浊)', phoneme:'\u00F0', examples:'this, mother, the', desc:'th在功能词/元音间发浊音/\u00F0/' },
+  { cat:'digraph', pattern:'ph', phoneme:'f', examples:'phone, photo, graph', desc:'ph组合发/f/' },
+  { cat:'digraph', pattern:'wh', phoneme:'w', examples:'when, what, white', desc:'wh组合发/w/' },
+  { cat:'digraph', pattern:'ng', phoneme:'\u014B', examples:'ring, song, sing', desc:'ng组合发后鼻音/\u014B/' },
+  { cat:'digraph', pattern:'ck', phoneme:'k', examples:'neck, duck, back', desc:'ck组合发/k/' },
+  { cat:'digraph', pattern:'wr', phoneme:'r', examples:'write, wrong, wrist', desc:'wr组合w不发音，只发/r/' },
+  { cat:'digraph', pattern:'kn', phoneme:'n', examples:'knife, knee, know', desc:'kn组合k不发音，只发/n/' },
+  { cat:'digraph', pattern:'gn', phoneme:'n', examples:'sign, gnat, gnome', desc:'gn组合g不发音，只发/n/' },
+  { cat:'digraph', pattern:'mb (词尾)', phoneme:'m', examples:'lamb, thumb, bomb', desc:'词尾mb中b不发音' },
+  { cat:'digraph', pattern:'tch', phoneme:'t\u0283', examples:'watch, kitchen, catch', desc:'tch组合发/t\u0283/' },
+  { cat:'digraph', pattern:'dge', phoneme:'d\u0292', examples:'bridge, judge, edge', desc:'dge组合发/d\u0292/' },
+  { cat:'digraph', pattern:'gu (词首)', phoneme:'\u0261', examples:'guard, guess, guide', desc:'词首gu中u不发音' },
+
+  // Magic-e (silent e)
+  { cat:'magic-e', pattern:'a_e', phoneme:'e\u026A', examples:'cake, make, name, gate', desc:'词尾e不发音，使a发长音/e\u026A/' },
+  { cat:'magic-e', pattern:'i_e', phoneme:'a\u026A', examples:'bike, time, kite, five', desc:'词尾e不发音，使i发长音/a\u026A/' },
+  { cat:'magic-e', pattern:'o_e', phoneme:'\u0259\u028A', examples:'home, nose, bone, note', desc:'词尾e不发音，使o发长音/\u0259\u028A/' },
+  { cat:'magic-e', pattern:'u_e', phoneme:'ju\u02D0', examples:'cube, tube, cute, mule', desc:'词尾e不发音，使u发长音/ju\u02D0/' },
+
+  // Vowel teams
+  { cat:'vowel-team', pattern:'ai', phoneme:'e\u026A', examples:'rain, train, wait, tail', desc:'ai组合发/e\u026A/' },
+  { cat:'vowel-team', pattern:'ay', phoneme:'e\u026A', examples:'day, play, say, may', desc:'ay组合发/e\u026A/' },
+  { cat:'vowel-team', pattern:'ee', phoneme:'i\u02D0', examples:'see, tree, green, feet', desc:'ee组合发/i\u02D0/' },
+  { cat:'vowel-team', pattern:'ea (长)', phoneme:'i\u02D0', examples:'tea, meat, read, seat', desc:'ea常发/i\u02D0/(有例外)' },
+  { cat:'vowel-team', pattern:'ea (短)', phoneme:'e', examples:'bread, head, dead, bed', desc:'ea有时发短音/e/' },
+  { cat:'vowel-team', pattern:'oa', phoneme:'\u0259\u028A', examples:'boat, coat, soap, road', desc:'oa组合发/\u0259\u028A/' },
+  { cat:'vowel-team', pattern:'igh', phoneme:'a\u026A', examples:'night, light, high, sign', desc:'igh组合发/a\u026A/，gh不发音' },
+  { cat:'vowel-team', pattern:'oy', phoneme:'\u0254\u026A', examples:'boy, coin, toy, join', desc:'oy组合发/\u0254\u026A/' },
+  { cat:'vowel-team', pattern:'oo (短)', phoneme:'\u028A', examples:'book, look, good, foot', desc:'oo常发短音/\u028A/' },
+  { cat:'vowel-team', pattern:'oo (长)', phoneme:'u\u02D0', examples:'moon, food, tooth, zoo', desc:'oo有时发长音/u\u02D0/' },
+  { cat:'vowel-team', pattern:'ou', phoneme:'a\u028A', examples:'cloud, house, out, round', desc:'ou组合发/a\u028A/' },
+  { cat:'vowel-team', pattern:'ow', phoneme:'a\u028A', examples:'cow, flower, down, brown', desc:'ow组合发/a\u028A/(有时发/o\u028A/)' },
+  { cat:'vowel-team', pattern:'ew', phoneme:'ju\u02D0', examples:'new, few, dew, flew', desc:'ew组合发/ju\u02D0/' },
+
+  // R-controlled
+  { cat:'r-controlled', pattern:'ar', phoneme:'\u0251\u02D0', examples:'car, far, star, park', desc:'ar组合发长音/\u0251\u02D0/' },
+  { cat:'r-controlled', pattern:'er', phoneme:'\u025C\u02D0', examples:'her, fern, term', desc:'er组合发/\u025C\u02D0/' },
+  { cat:'r-controlled', pattern:'ir', phoneme:'\u025C\u02D0', examples:'bird, girl, sir, first', desc:'ir组合发/\u025C\u02D0/' },
+  { cat:'r-controlled', pattern:'or', phoneme:'\u0254\u02D0', examples:'fork, horn, for, corn', desc:'or组合发/\u0254\u02D0/' },
+  { cat:'r-controlled', pattern:'ur', phoneme:'\u025C\u02D0', examples:'turn, burn, fur, curl', desc:'ur组合发/\u025C\u02D0/' },
+  { cat:'r-controlled', pattern:'air', phoneme:'e\u0259', examples:'hair, chair, fair, pair', desc:'air组合发/e\u0259/' },
+  { cat:'r-controlled', pattern:'ear', phoneme:'\u026A\u0259', examples:'ear, near, hear, dear', desc:'ear组合常发/\u026A\u0259/' },
+  { cat:'r-controlled', pattern:'ere', phoneme:'\u026A\u0259', examples:'here, mere', desc:'ere组合发/\u026A\u0259/' },
+
+  // Double consonants
+  { cat:'double', pattern:'ll', phoneme:'l', examples:'shell, tall, bell', desc:'ll只发一个/l/' },
+  { cat:'double', pattern:'ss', phoneme:'s', examples:'chess, glass, kiss', desc:'ss只发一个/s/' },
+  { cat:'double', pattern:'pp', phoneme:'p', examples:'apple, happy, pepper', desc:'pp只发一个/p/' },
+  { cat:'double', pattern:'tt', phoneme:'t', examples:'little, kitten, butter', desc:'tt只发一个/t/' },
+  { cat:'double', pattern:'nn', phoneme:'n', examples:'dinner, sunny, runner', desc:'nn只发一个/n/' },
+  { cat:'double', pattern:'bb', phoneme:'b', examples:'rabbit, bubble', desc:'bb只发一个/b/' },
+  { cat:'double', pattern:'dd', phoneme:'d', examples:'ladder, middle', desc:'dd只发一个/d/' },
+  { cat:'double', pattern:'ff', phoneme:'f', examples:'coffee, off, muffin', desc:'ff只发一个/f/' },
+  { cat:'double', pattern:'gg', phoneme:'\u0261', examples:'bigger, egg', desc:'gg只发一个/\u0261/' },
+  { cat:'double', pattern:'mm', phoneme:'m', examples:'hammer, summer', desc:'mm只发一个/m/' },
+
+  // Soft C and G
+  { cat:'soft-cg', pattern:'ce/ci/cy', phoneme:'s', examples:'cent, city, cycle, ice', desc:'c在e/i/y前发/s/' },
+  { cat:'soft-cg', pattern:'ge/gi/gy', phoneme:'d\u0292', examples:'gem, giant, gym, page', desc:'g在e/i/y前发/d\u0292/' },
+  { cat:'soft-cg', pattern:'ca/co/cu', phoneme:'k', examples:'cat, cold, cup, cut', desc:'c在a/o/u前发/k/' },
+  { cat:'soft-cg', pattern:'ga/go/gu', phoneme:'\u0261', examples:'game, go, gun, gas', desc:'g在a/o/u前发/\u0261/' },
+];
+
+const RULE_CATEGORIES = {
+  'short-vowel': '短元音',
+  'digraph': '辅音组合',
+  'magic-e': 'Magic-E',
+  'vowel-team': '元音组合',
+  'r-controlled': 'R控制元音',
+  'double': '双辅音',
+  'soft-cg': '软C/软G',
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let stats = JSON.parse(localStorage.getItem('phonics_stats') || '{"total":0,"correct":0,"streak":0,"bestStreak":0}');
+let m1Pool = [], m1Idx = 0, m1Count = 0;
+let m2Current = null, m2Count = 0, m2Correct = 0;
+let m3Current = null, m3Count = 0;
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.querySelectorAll('.header nav button').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + name);
+  if (navBtn) navBtn.classList.add('active');
+  if (name === 'home') updateStats();
+  if (name === 'mode1') m1Init();
+  if (name === 'mode2') m2Init();
+  if (name === 'mode3') m3Init();
+  if (name === 'chart') renderChart();
+  if (name === 'rules') renderRules();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  document.getElementById('stat-total').textContent = stats.total;
+  document.getElementById('stat-correct').textContent = stats.correct;
+  const acc = stats.total > 0 ? Math.round(stats.correct / stats.total * 100) + '%' : '\u2014';
+  document.getElementById('stat-accuracy').textContent = acc;
+  document.getElementById('stat-streak').textContent = stats.bestStreak;
+}
+function saveStats() { localStorage.setItem('phonics_stats', JSON.stringify(stats)); }
+function resetStats() {
+  if (confirm('确定要重置所有练习记录吗？此操作不可撤销。')) {
+    stats = { total:0, correct:0, streak:0, bestStreak:0 };
+    saveStats(); updateStats();
+  }
+}
+function recordAnswer(correct) {
+  stats.total++;
+  if (correct) {
+    stats.correct++;
+    stats.streak++;
+    if (stats.streak > stats.bestStreak) stats.bestStreak = stats.streak;
+  } else {
+    stats.streak = 0;
+  }
+  saveStats();
+}
+
+// ============================================================
+// TTS
+// ============================================================
+let voices = [];
+function loadVoices() {
+  voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text, opts = {}) {
+  if (!window.speechSynthesis) { console.warn('TTS not available'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = opts.lang || 'en-US';
+  u.rate = opts.rate || 0.85;
+  u.pitch = opts.pitch || 1;
+  const enVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+                  voices.find(v => v.lang.startsWith('en')) ||
+                  voices[0];
+  if (enVoice) u.voice = enVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// ============================================================
+// MODE 1: See IPA → Read
+// ============================================================
+function m1Init() {
+  m1Pool = [];
+  const cat = document.getElementById('m1-category').value;
+  if (cat === 'all') {
+    Object.keys(IPA_DATA).forEach(k => {
+      IPA_DATA[k].items.forEach(item => m1Pool.push({ ...item, cat: k }));
+    });
+  } else {
+    IPA_DATA[cat].items.forEach(item => m1Pool.push({ ...item, cat }));
+  }
+  m1Pool = shuffle(m1Pool);
+  m1Idx = 0; m1Count = 0;
+  m1Show();
+}
+function m1Show() {
+  if (m1Idx >= m1Pool.length) {
+    m1Pool = shuffle(m1Pool);
+    m1Idx = 0;
+  }
+  const item = m1Pool[m1Idx];
+  document.getElementById('m1-symbol').textContent = '/' + item.symbol + '/';
+  document.getElementById('m1-desc').textContent = item.desc || '';
+  document.getElementById('m1-examples').textContent = '示例词: ' + item.examples.join(', ');
+  document.getElementById('m1-count').textContent = m1Count;
+  document.getElementById('m1-progress').style.width = ((m1Idx + 1) / m1Pool.length * 100) + '%';
+}
+function m1PlayExample() {
+  const item = m1Pool[m1Idx];
+  if (item && item.examples.length > 0) {
+    speak(item.examples[0], { rate: 0.8 });
+  }
+}
+function m1Next() {
+  m1Idx++; m1Count++;
+  recordAnswer(true); // self-assessed, always counts as practiced
+  m1Show();
+}
+
+// ============================================================
+// MODE 2: Hear Word → Write IPA
+// ============================================================
+function m2Init() {
+  m2Count = 0; m2Correct = 0;
+  m2Next();
+  renderIPAKeyboard();
+}
+function m2GetWord() {
+  const level = document.getElementById('m2-level').value;
+  let pool = level === 'all' ? WORDS : WORDS.filter(w => w.level == parseInt(level));
+  if (pool.length === 0) pool = WORDS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function m2Next() {
+  m2Current = m2GetWord();
+  document.getElementById('m2-input').value = '';
+  document.getElementById('m2-feedback').classList.remove('show');
+  document.getElementById('m2-reveal').classList.remove('show');
+  document.getElementById('m2-next-btn').style.display = 'none';
+  document.getElementById('m2-play-btn').textContent = '播放发音';
+  document.getElementById('m2-count').textContent = m2Count;
+  document.getElementById('m2-correct').textContent = m2Correct;
+  document.getElementById('m2-progress').style.width =
+    (m2Count > 0 ? Math.round(m2Correct / m2Count * 100) : 0) + '%';
+  document.getElementById('m2-input').focus();
+  // Auto-play after a short delay
+  setTimeout(() => m2Play(), 300);
+}
+function m2Play() {
+  if (m2Current) speak(m2Current.word, { rate: 0.75 });
+}
+function m2Check() {
+  if (!m2Current) return;
+  const input = document.getElementById('m2-input').value.trim().replace(/^\//, '').replace(/\/$/, '');
+  const answer = m2Current.ipa.replace(/[\u02C8\u02CC\u02D0]/g, ''); // remove stress marks for comparison
+  const userClean = input.replace(/[\u02C8\u02CC\u02D0]/g, '');
+  m2Count++;
+  const fb = document.getElementById('m2-feedback');
+  if (userClean === answer) {
+    m2Correct++;
+    recordAnswer(true);
+    fb.className = 'feedback correct show';
+    fb.innerHTML = '<strong>\u2705 正确！</strong> 完美写出了音标';
+  } else {
+    recordAnswer(false);
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = '<strong>\u274C 不完全正确</strong> 你的答案: /' + input + '/';
+  }
+  document.getElementById('m2-answer').textContent = '/' + m2Current.ipa + '/';
+  document.getElementById('m2-word-info').textContent = '单词: ' + m2Current.word;
+  document.getElementById('m2-reveal').classList.add('show');
+  document.getElementById('m2-next-btn').style.display = 'inline-flex';
+  document.getElementById('m2-progress').style.width =
+    Math.round(m2Correct / m2Count * 100) + '%';
+}
+function m2Reveal() {
+  if (!m2Current) return;
+  document.getElementById('m2-answer').textContent = '/' + m2Current.ipa + '/';
+  document.getElementById('m2-word-info').textContent = '单词: ' + m2Current.word;
+  document.getElementById('m2-reveal').classList.add('show');
+  if (m2Count === 0 || document.getElementById('m2-feedback').classList.contains('show') === false) {
+    m2Count++;
+    recordAnswer(false);
+  }
+  document.getElementById('m2-next-btn').style.display = 'inline-flex';
+  document.getElementById('m2-count').textContent = m2Count;
+}
+function renderIPAKeyboard() {
+  const keys = ['\u00E6','\u0252','\u028C','\u028A','\u0259','\u026A','\u0254','\u025C','\u0251','i','e','a','o','u',
+                '\u0261','\u0283','\u0292','\u03B8','\u00F0','\u014B','t\u0283','d\u0292','\u02D0','\u02C8'];
+  const container = document.getElementById('m2-keyboard');
+  container.innerHTML = '';
+  keys.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'ipa-key';
+    btn.textContent = k;
+    btn.onclick = () => {
+      const input = document.getElementById('m2-input');
+      input.value += k;
+      input.focus();
+    };
+    container.appendChild(btn);
+  });
+}
+
+// ============================================================
+// MODE 3: See Word → Read with Phonics
+// ============================================================
+function m3Init() {
+  m3Count = 0;
+  m3Next();
+}
+function m3GetWord() {
+  const level = document.getElementById('m3-level').value;
+  let pool = level === 'all' ? WORDS : WORDS.filter(w => w.level == parseInt(level));
+  if (pool.length === 0) pool = WORDS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function m3Next() {
+  m3Current = m3GetWord();
+  m3Count++;
+  document.getElementById('m3-word').textContent = m3Current.word;
+  document.getElementById('m3-count').textContent = m3Count;
+  document.getElementById('m3-progress').style.width = ((m3Count % 20) / 20 * 100) + '%';
+  // Render phonics breakdown
+  const showPhonics = document.getElementById('m3-show-phonics').checked;
+  const breakdown = document.getElementById('m3-breakdown');
+  breakdown.innerHTML = '';
+  if (showPhonics) {
+    m3Current.phonics.forEach(([grapheme, phoneme]) => {
+      const block = document.createElement('div');
+      block.className = 'phoneme-block' + (phoneme === '' ? ' unknown' : '');
+      block.innerHTML = '<div class="grapheme">' + grapheme + '</div>' +
+                        '<div class="phoneme">/' + (phoneme || '\u2014') + '/</div>';
+      if (phoneme) {
+        block.onclick = () => speak(m3Current.word, { rate: 0.7 });
+      }
+      breakdown.appendChild(block);
+    });
+  }
+  document.getElementById('m3-ipa').style.display = 'none';
+}
+function m3Play() {
+  if (m3Current) speak(m3Current.word, { rate: 0.75 });
+}
+function m3TogglePhonics() {
+  const cb = document.getElementById('m3-show-phonics');
+  cb.checked = !cb.checked;
+  document.getElementById('m3-toggle-btn').textContent = cb.checked ? '隐藏拆分' : '显示拆分';
+  // Re-render current word
+  const breakdown = document.getElementById('m3-breakdown');
+  breakdown.innerHTML = '';
+  if (cb.checked) {
+    m3Current.phonics.forEach(([grapheme, phoneme]) => {
+      const block = document.createElement('div');
+      block.className = 'phoneme-block' + (phoneme === '' ? ' unknown' : '');
+      block.innerHTML = '<div class="grapheme">' + grapheme + '</div>' +
+                        '<div class="phoneme">/' + (phoneme || '\u2014') + '/</div>';
+      if (phoneme) block.onclick = () => speak(m3Current.word, { rate: 0.7 });
+      breakdown.appendChild(block);
+    });
+  }
+}
+
+// ============================================================
+// IPA CHART
+// ============================================================
+function renderChart() {
+  const container = document.getElementById('ipa-chart-container');
+  container.innerHTML = '';
+  Object.keys(IPA_DATA).forEach(catKey => {
+    const cat = IPA_DATA[catKey];
+    const div = document.createElement('div');
+    div.className = 'ipa-category';
+    div.innerHTML = '<h3>' + cat.title + '</h3>';
+    const grid = document.createElement('div');
+    grid.className = 'ipa-grid';
+    cat.items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'ipa-item';
+      el.innerHTML = '<div class="symbol">/' + item.symbol + '/</div>' +
+                     '<div class="example">' + item.examples.join(', ') + '</div>' +
+                     '<div class="desc">' + (item.desc || '') + '</div>';
+      el.onclick = () => speak(item.examples[0], { rate: 0.8 });
+      grid.appendChild(el);
+    });
+    div.appendChild(grid);
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// PHONICS RULES
+// ============================================================
+let ruleFilter = 'all';
+function renderRules() {
+  // Render filter bar
+  const filterBar = document.getElementById('rule-filter-bar');
+  filterBar.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.textContent = '全部';
+  allBtn.className = ruleFilter === 'all' ? 'active' : '';
+  allBtn.onclick = () => { ruleFilter = 'all'; renderRules(); };
+  filterBar.appendChild(allBtn);
+  Object.keys(RULE_CATEGORIES).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = RULE_CATEGORIES[cat];
+    btn.className = ruleFilter === cat ? 'active' : '';
+    btn.onclick = () => { ruleFilter = cat; renderRules(); };
+    filterBar.appendChild(btn);
+  });
+
+  // Render rules
+  const container = document.getElementById('rules-container');
+  container.innerHTML = '';
+  const filtered = ruleFilter === 'all' ? PHONICS_RULES : PHONICS_RULES.filter(r => r.cat === ruleFilter);
+  filtered.forEach(rule => {
+    const div = document.createElement('div');
+    div.className = 'rule-card';
+    div.innerHTML =
+      '<div class="rule-pattern">' + rule.pattern + '</div>' +
+      '<div class="rule-info">' +
+        '<div><span class="rule-phoneme">/' + rule.phoneme + '/</span> ' +
+        '<span style="font-size:0.8rem; color:var(--text-light);">[' + (RULE_CATEGORIES[rule.cat] || rule.cat) + ']</span></div>' +
+        '<div class="rule-examples">' + rule.examples + '</div>' +
+        '<div class="rule-desc">' + rule.desc + '</div>' +
+      '</div>' +
+      '<button class="play-btn" title="\u64AD\u653E\u793A\u4F8B">\u25B6</button>';
+    div.querySelector('.play-btn').onclick = () => speak(rule.examples.split(',')[0].trim(), { rate: 0.8 });
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateStats();
+// Preload TTS
+if (window.speechSynthesis) {
+  // Some browsers need a user interaction to start TTS
+  document.addEventListener('click', function initTTS() {
+    if (voices.length === 0) loadVoices();
+    // Test speak to unlock
+    try { speak('hello', { rate: 2 }); window.speechSynthesis.cancel(); } catch(e) {}
+    document.removeEventListener('click', initTTS);
+  }, { once: true });
+}
+</script>
+</body>
+</html>
