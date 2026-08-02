@@ -532,12 +532,16 @@ body {
     </span>
   </div>
   <div class="practice-card" id="m1-card">
-    <p class="hint-text">请大声读出下面的音标</p>
-    <div class="big-display" id="m1-symbol">/æ/</div>
+    <p class="hint-text">请大声读出下面的音标（点击音标也可听发音）</p>
+    <div class="big-display" id="m1-symbol" onclick="m1PlayPhoneme()" style="cursor:pointer;" title="点击听这个音">/æ/</div>
     <div id="m1-desc" class="hint-text">短元音，嘴巴张大</div>
     <div id="m1-examples" class="hint-text" style="font-size:1rem; color:var(--text);">示例词: cat, bat, map</div>
+    <p class="hint-text" style="font-size:0.75rem; max-width:360px; margin:4px auto 0;">
+      注：浏览器无法直接朗读单个音标，「听这个音」会慢速播放一个含该音的关键词。
+    </p>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="m1PlayExample()">听示例词</button>
+      <button class="btn btn-primary" onclick="m1PlayPhoneme()">听这个音</button>
+      <button class="btn btn-secondary" onclick="m1PlayExample()">听例词</button>
       <button class="btn btn-success" onclick="m1Next()">我读对了 ↵</button>
       <button class="btn btn-secondary" onclick="m1Next()">跳过</button>
     </div>
@@ -1131,10 +1135,21 @@ function m1Show() {
   document.getElementById('m1-count').textContent = m1Count;
   document.getElementById('m1-progress').style.width = ((m1Idx + 1) / m1Pool.length * 100) + '%';
 }
+function m1PlayPhoneme() {
+  const item = m1Pool[m1Idx];
+  if (item && item.examples.length > 0) {
+    // Play the first example word slowly so the target phoneme stands out.
+    // Browser TTS cannot pronounce an isolated IPA phoneme, so we use a keyword.
+    speak(item.examples[0], { rate: 0.55 });
+  }
+}
 function m1PlayExample() {
   const item = m1Pool[m1Idx];
   if (item && item.examples.length > 0) {
-    speak(item.examples[0], { rate: 0.8 });
+    // Cycle through all example words each time the button is clicked.
+    if (typeof item._exIdx !== 'number') item._exIdx = 0;
+    speak(item.examples[item._exIdx], { rate: 0.8 });
+    item._exIdx = (item._exIdx + 1) % item.examples.length;
   }
 }
 function m1Next() {
