@@ -440,6 +440,7 @@ body {
     <button onclick="showSection('mode3')" id="nav-mode3">看词拼读</button>
     <button onclick="showSection('chart')" id="nav-chart">音标表</button>
     <button onclick="showSection('rules')" id="nav-rules">拼读规则</button>
+    <button onclick="showSection('settings')" id="nav-settings">发音设置</button>
   </nav>
 </div>
 
@@ -645,6 +646,35 @@ body {
   </div>
   <div class="rule-filter" id="rule-filter-bar"></div>
   <div class="rules-list" id="rules-container"></div>
+</div>
+
+<!-- ===== SETTINGS: Voice ===== -->
+<div class="section" id="section-settings">
+  <div class="mode-header">
+    <h2>发音设置</h2>
+    <button class="back-btn" onclick="showSection('home')">← 返回首页</button>
+  </div>
+  <div class="practice-card">
+    <div style="width:100%; text-align:left;">
+      <label style="font-size:0.9rem; color:var(--text-light); display:block; margin-bottom:6px;">
+        发音人（选一个你听得顺耳的嗓音）
+      </label>
+      <select id="voice-select" onchange="saveTTSSettings()" style="width:100%; padding:12px; font-size:0.95rem; border:1px solid var(--border); border-radius:var(--radius-sm); outline:none;"></select>
+
+      <label style="font-size:0.9rem; color:var(--text-light); display:block; margin-top:20px; margin-bottom:6px;">
+        语速：<span id="rate-label" style="color:var(--primary); font-weight:600;">0.85</span>x
+      </label>
+      <input type="range" id="rate-slider" min="0.5" max="1.1" step="0.05" value="0.85"
+        onchange="saveTTSSettings()" oninput="document.getElementById('rate-label').textContent=this.value"
+        style="width:100%; accent-color:var(--primary);">
+
+      <button class="btn btn-primary" style="margin-top:20px; width:100%;" onclick="testTTS()">试听发音</button>
+      <div id="voice-status" style="font-size:0.85rem; color:var(--success); text-align:center; margin-top:12px; min-height:18px;"></div>
+      <p class="hint-text" style="margin-top:16px; font-size:0.8rem; line-height:1.7;">
+        提示：iOS 上如果列表里没有好听的选项，先去「设置 → 辅助功能 → 语音内容 → 朗读所选项 / 语音」里下载英语语音（推荐 <strong>Samantha / Victoria / Karen</strong>），回来刷新本页就会出现。
+      </p>
+    </div>
+  </div>
 </div>
 
 </div>
@@ -961,6 +991,7 @@ function showSection(name) {
   if (name === 'mode3') m3Init();
   if (name === 'chart') renderChart();
   if (name === 'rules') renderRules();
+  if (name === 'settings') populateVoiceList();
 }
 
 // ============================================================
@@ -996,24 +1027,78 @@ function recordAnswer(correct) {
 // TTS
 // ============================================================
 let voices = [];
+let ttsSettings = JSON.parse(localStorage.getItem('phonics_tts') || '{}');
 function loadVoices() {
   voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  populateVoiceList();
 }
 if (window.speechSynthesis) {
   loadVoices();
   window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function populateVoiceList() {
+  const sel = document.getElementById('voice-select');
+  if (!sel) return;
+  const enVoices = voices.filter(v => v.lang && v.lang.startsWith('en'));
+  if (enVoices.length === 0) {
+    sel.innerHTML = '<option value="">（暂未找到英语语音，请检查设备语音设置）</option>';
+    return;
+  }
+  // Prefer natural-sounding voices
+  const rank = v => /google|samantha|victoria|natural|neural|enhanced|microsoft|karen|moira|zira|susan|laura|george|alex|daniel|arthur|tessa/i.test(v.name) ? 0 : 1;
+  enVoices.sort((a, b) => rank(a) - rank(b));
+  sel.innerHTML = '';
+  enVoices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    opt.textContent = v.name + ' (' + v.lang + ')';
+    sel.appendChild(opt);
+  });
+  // Select saved or default to best
+  if (ttsSettings.voiceURI && enVoices.find(v => v.voiceURI === ttsSettings.voiceURI)) {
+    sel.value = ttsSettings.voiceURI;
+  } else {
+    sel.value = enVoices[0].voiceURI;
+    ttsSettings.voiceURI = enVoices[0].voiceURI;
+    localStorage.setItem('phonics_tts', JSON.stringify(ttsSettings));
+  }
+  const slider = document.getElementById('rate-slider');
+  if (slider && ttsSettings.rate) {
+    slider.value = ttsSettings.rate;
+    document.getElementById('rate-label').textContent = ttsSettings.rate;
+  }
+}
+function saveTTSSettings(silent) {
+  const sel = document.getElementById('voice-select');
+  if (sel) ttsSettings.voiceURI = sel.value;
+  const slider = document.getElementById('rate-slider');
+  if (slider) ttsSettings.rate = parseFloat(slider.value);
+  localStorage.setItem('phonics_tts', JSON.stringify(ttsSettings));
+  if (!silent) {
+    const st = document.getElementById('voice-status');
+    if (st) st.textContent = '设置已保存 ✓';
+  }
+}
+function testTTS() {
+  saveTTSSettings(true);
+  speak('Hello, this is a phonics practice app.', { rate: ttsSettings.rate || 0.85 });
 }
 function speak(text, opts = {}) {
   if (!window.speechSynthesis) { console.warn('TTS not available'); return; }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = opts.lang || 'en-US';
-  u.rate = opts.rate || 0.85;
+  u.rate = ttsSettings.rate || opts.rate || 0.85;
   u.pitch = opts.pitch || 1;
-  const enVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
-                  voices.find(v => v.lang.startsWith('en')) ||
-                  voices[0];
-  if (enVoice) u.voice = enVoice;
+  const saved = voices.find(v => v.voiceURI === ttsSettings.voiceURI);
+  if (saved) {
+    u.voice = saved;
+  } else {
+    const best = voices.find(v => v.lang && v.lang.startsWith('en') &&
+      /google|samantha|victoria|natural|neural|enhanced|microsoft|karen|moira|zira/i.test(v.name)) ||
+      voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+    if (best) u.voice = best;
+  }
   window.speechSynthesis.speak(u);
 }
 
