@@ -533,11 +533,11 @@ body {
   </div>
   <div class="practice-card" id="m1-card">
     <p class="hint-text">请大声读出下面的音标（点击音标也可听发音）</p>
-    <div class="big-display" id="m1-symbol" onclick="m1PlayPhoneme()" style="cursor:pointer;" title="点击听这个音">/æ/</div>
+    <div class="big-display" id="m1-symbol" onclick="m1PlayPhoneme()" style="cursor:pointer;" title="点击听这个音（真人独立发音）">/æ/</div>
     <div id="m1-desc" class="hint-text">短元音，嘴巴张大</div>
     <div id="m1-examples" class="hint-text" style="font-size:1rem; color:var(--text);">示例词: cat, bat, map</div>
     <p class="hint-text" style="font-size:0.75rem; max-width:360px; margin:4px auto 0;">
-      注：浏览器无法直接朗读单个音标，「听这个音」会慢速播放一个含该音的关键词。
+      注：「听这个音」播放该音标的<strong>真人独立发音</strong>；双元音无独立发音录音，会自动慢速播放含该音的关键词。
     </p>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="m1PlayPhoneme()">听这个音</button>
@@ -684,6 +684,7 @@ body {
 </div>
 
 <script src="audio.js"></script>
+<script src="phoneme_audio.js"></script>
 <script>
 // ============================================================
 // DATA: IPA Phonemes (44 English phonemes)
@@ -1126,6 +1127,24 @@ function playAudioFor(word, opts = {}) {
   }
 }
 
+// Play the ISOLATED IPA phoneme (real human recording) when available.
+// Diphthongs / missing recordings fall back to a slow keyword word.
+const phonemePlayer = new Audio();
+phonemePlayer.preload = 'auto';
+function playPhoneme(symbol, examples, opts = {}) {
+  const map = (typeof window.PHONEME_AUDIO !== 'undefined') ? window.PHONEME_AUDIO : {};
+  if (map[symbol]) {
+    phonemePlayer.src = 'phoneme_audio/' + map[symbol];
+    phonemePlayer.playbackRate = opts.slow ? 0.7 : 1;
+    phonemePlayer.play().catch(() => {
+      if (examples && examples.length) playAudioFor(examples[0], { slow: true });
+    });
+    return;
+  }
+  // No isolated recording (e.g. diphthong) -> keyword fallback.
+  if (examples && examples.length) playAudioFor(examples[0], { slow: true });
+}
+
 // ============================================================
 // MODE 1: See IPA → Read
 // ============================================================
@@ -1157,10 +1176,9 @@ function m1Show() {
 }
 function m1PlayPhoneme() {
   const item = m1Pool[m1Idx];
-  if (item && item.examples.length > 0) {
-    // Play the first example word slowly so the target phoneme stands out.
-    // Browser TTS cannot pronounce an isolated IPA phoneme, so we use a keyword.
-    playAudioFor(item.examples[0], { slow: true });
+  if (item) {
+    // Play the ISOLATED phoneme recording; falls back to a slow keyword word.
+    playPhoneme(item.symbol, item.examples);
   }
 }
 function m1PlayExample() {
@@ -1342,7 +1360,7 @@ function renderChart() {
       el.innerHTML = '<div class="symbol">/' + item.symbol + '/</div>' +
                      '<div class="example">' + item.examples.join(', ') + '</div>' +
                      '<div class="desc">' + (item.desc || '') + '</div>';
-      el.onclick = () => playAudioFor(item.examples[0]);
+      el.onclick = () => playPhoneme(item.symbol, item.examples);
       grid.appendChild(el);
     });
     div.appendChild(grid);
